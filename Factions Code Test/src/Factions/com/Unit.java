@@ -1,13 +1,26 @@
 package Factions.com;
 
 public class Unit {
+	private String name;
 	private int health = 5;
 	private int water = 1;
 	private int food = 3;
 	private boolean hasCraftedWeapon = false;
 
-	public Unit() {
+	public Unit(String newName) {
+		name = newName;
+	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Name " + name + ", ");
+		sb.append(health + " Health, ");
+		sb.append(water + " Water, ");
+		sb.append(food + " Food");
+		sb.append("\n");
+
+		return sb.toString();
 	}
 
 	public int getHealth() {
@@ -40,5 +53,13 @@ public class Unit {
 
 	public void setHasCraftedWeapon(boolean hasCraftedWeapon) {
 		this.hasCraftedWeapon = hasCraftedWeapon;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

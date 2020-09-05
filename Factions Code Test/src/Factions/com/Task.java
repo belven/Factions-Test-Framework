@@ -1,19 +1,22 @@
 package Factions.com;
 
-public class Task {
-	private Need need = null;
+public abstract class Task {
+	private TaskType type;
 
-	public Task(Need need) {
-		super();
-		this.setNeed(need);
+	public Task(TaskType inType) {
+		type = inType;
 	}
 
-	public Need getNeed() {
-		return need;
+	public TaskType getType() {
+		return type;
 	}
 
-	public void setNeed(Need need) {
-		this.need = need;
+	public void setType(TaskType type) {
+		this.type = type;
 	}
 
+	@Override
+	public String toString() {
+		return type.toString();
+	}
 }

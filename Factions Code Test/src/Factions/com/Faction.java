@@ -12,22 +12,29 @@ public class Faction {
 	private int currentWeapons = 0;
 	private int currentScrap = 0;
 	private int currentShelter = 0;
-	private int currentUnits = 0;
-	private HashMap<ResourceType, Need> currentNeeds = new HashMap<ResourceType, Need>();
-	private ArrayList<Task> tasks = new ArrayList<>();
 
-	public Faction(String name, int currentWater, int currentFood, int currentWeapons, int currentScrap, int currentUnits, ArrayList<ResourceGenerator> supplies) {
+	private ArrayList<Task> tasks = new ArrayList<>();
+	private ArrayList<Unit> currentUnits = new ArrayList<>();
+	private ArrayList<Group> currentGroups = new ArrayList<>();
+	private ArrayList<ResourceGenerator> ownedResourceGenerators = new ArrayList<>();
+
+	private HashMap<ResourceType, Need> currentNeeds = new HashMap<ResourceType, Need>();
+
+	public Faction(String name, int currentWater, int currentFood, int currentWeapons, int currentScrap, int amountOfUnits, ArrayList<ResourceGenerator> supplies) {
 		super();
 		this.name = name;
 		this.currentWater = currentWater;
 		this.currentFood = currentFood;
 		this.currentWeapons = currentWeapons;
 		this.currentScrap = currentScrap;
-		this.currentUnits = currentUnits;
 		this.ownedResourceGenerators = supplies;
-	}
 
-	private ArrayList<ResourceGenerator> ownedResourceGenerators = new ArrayList<>();
+		for (int i = 0; i < amountOfUnits; i++) {
+			String id = String.valueOf(i + 1);
+			currentUnits.add(new Unit(id));
+		}
+
+	}
 
 	public void nextDay() {
 		// Gain resources
@@ -39,6 +46,112 @@ public class Faction {
 		calculateUnitNeeds();
 		calculateNeeds();
 		calculateTasks();
+		assignGroups();
+
+	}
+
+	private void assignGroups() {
+		int unitID = 0;
+		currentGroups.clear();
+
+		System.out.println(name);
+
+		// Spilt the units in half, this way want to change later
+		int unitSplit = Math.round(getCurrentUnits() / 2);
+		int offensiveUnits = unitSplit;
+
+		// If we have 11 units and unitSplit is 6, then we want the remainder to be the defensiveUnits
+		int defensiveUnits = getCurrentUnits() - unitSplit;
+
+		// Split up the defensiveUnits between our resource generators
+		// TODO make the AI prioritise locations based on needs and possibility of attack
+		// If we have a well but it's at the back of the map, lean towards areas further from the base
+
+		int areasToDefend = ownedResourceGenerators.size();
+		int unitsPerGroup = Math.round(defensiveUnits / areasToDefend);
+
+		for (int group = 0; group < areasToDefend; group++) {
+			ArrayList<Unit> units = new ArrayList<>();
+			int unitsToAdd = unitsPerGroup;
+
+			if (group == 0) {
+				// Another issue where we may have an odd number, so add the extras to the first group
+				// It shouldn't make much difference
+				int excessUnits = defensiveUnits % (areasToDefend * unitsPerGroup);
+
+				if (excessUnits != 0) {
+					unitsToAdd += excessUnits;
+				}
+			}
+
+			// unitID should progress from 0 to units.size(), this avoids adding the same unit to multiple groups
+			// units.size() < unitsToAdd should only add units until we've reached unitsToAdd
+			for (; units.size() < unitsToAdd; unitID++) {
+				Unit unit = currentUnits.get(unitID);
+				units.add(unit);
+			}
+
+			String groupID = String.valueOf(currentGroups.size() + 1);
+			currentGroups.add(new Group(groupID, units, TaskType.DEFENSIVE, null));
+		}
+
+		int offensiveActionsAmount = getOffensiveActionsAmount();
+		unitsPerGroup = Math.round(offensiveUnits / offensiveActionsAmount);
+		for (int group = 0; group < offensiveActionsAmount; group++) {
+			ArrayList<Unit> units = new ArrayList<>();
+			int unitsToAdd = unitsPerGroup;
+
+			if (group == 0) {
+				// Another issue where we may have an odd number, so add the extras to the first group
+				// It shouldn't make much difference
+				int excessUnits = offensiveUnits % (offensiveActionsAmount * unitsPerGroup);
+
+				if (excessUnits != 0) {
+					unitsToAdd += excessUnits;
+				}
+			}
+
+			// unitID should progress from 0 to units.size(), this avoids adding the same unit to multiple groups
+			// units.size() < unitsToAdd should only add units until we've reached unitsToAdd
+			for (; units.size() < unitsToAdd; unitID++) {
+				Unit unit = currentUnits.get(unitID);
+				units.add(unit);
+			}
+
+			String groupID = String.valueOf(currentGroups.size() + 1);
+			currentGroups.add(new Group(groupID, units, TaskType.OFFENSIVE, null));
+		}
+
+		for (Task task : tasks) {
+			Group group = getAvalibleGroupByTaskType(task.getType());
+
+			if (group != null) {
+				group.setTask(task);
+			}
+		}
+
+		System.out.println(getCurrentGroups().toString());
+	}
+
+	// Find groups by a task type, either offensive or defensive and one that doesn't have a task already
+	Group getAvalibleGroupByTaskType(TaskType type) {
+		for (Group group : currentGroups) {
+			if (group.getGroupType() == type && group.getTask() == null) {
+				return group;
+			}
+		}
+		return null;
+	}
+
+	public int getOffensiveActionsAmount() {
+		int amount = 0;
+		for (Task task : tasks) {
+			if (task.getType() == TaskType.OFFENSIVE) {
+				amount++;
+			}
+		}
+
+		return amount;
 	}
 
 	private void calculateTasks() {
@@ -46,30 +159,36 @@ public class Faction {
 
 		// This is where we define our priority order
 		if (currentNeeds.get(ResourceType.WATER) != null) {
-			tasks.add(new Task(currentNeeds.get(ResourceType.WATER)));
+			tasks.add(new OffensiveTask(currentNeeds.get(ResourceType.WATER)));
 		}
 
 		if (currentNeeds.get(ResourceType.FOOD) != null) {
-			tasks.add(new Task(currentNeeds.get(ResourceType.FOOD)));
+			tasks.add(new OffensiveTask(currentNeeds.get(ResourceType.FOOD)));
 		}
 
 		if (currentNeeds.get(ResourceType.SHELTER) != null) {
-			tasks.add(new Task(currentNeeds.get(ResourceType.SHELTER)));
+			tasks.add(new OffensiveTask(currentNeeds.get(ResourceType.SHELTER)));
 		}
 
 		if (currentNeeds.get(ResourceType.WEAPONS) != null) {
-			tasks.add(new Task(currentNeeds.get(ResourceType.WEAPONS)));
+			tasks.add(new OffensiveTask(currentNeeds.get(ResourceType.WEAPONS)));
 		}
 
 		if (currentNeeds.get(ResourceType.SCRAP) != null) {
-			tasks.add(new Task(currentNeeds.get(ResourceType.SCRAP)));
+			tasks.add(new OffensiveTask(currentNeeds.get(ResourceType.SCRAP)));
+		}
+
+		for (ResourceGenerator resourceGenerator : ownedResourceGenerators) {
+			tasks.add(new DefensiveTask(resourceGenerator));
 		}
 	}
 
 	private void calculateUnitNeeds() {
-		// TODO Need to change food so they don't need it every day?? evey 3 days?
-		currentWater -= currentUnits;
-		currentFood -= currentUnits;
+		// TODO make this calculate using only units that have lost water
+		currentWater -= getCurrentUnits();
+
+		// TODO make this calculate using only units that have lost food
+		currentFood -= getCurrentUnits();
 
 		currentFood = Math.max(0, currentFood);
 		currentWater = Math.max(0, currentWater);
@@ -88,8 +207,6 @@ public class Faction {
 				// weapons.
 				// If we have no weapons generated then this will be 0
 				int weaponsCreated = Math.min(currentScrap, weaponProductionAmount);
-
-				System.out.println("Weapons Created: " + weaponsCreated);
 
 				currentWeapons += weaponsCreated;
 				currentScrap -= weaponsCreated;
@@ -161,26 +278,26 @@ public class Faction {
 		}
 
 		// Do we have enough water generation?
-		if (waterGenerated < currentUnits) {
-			currentNeeds.put(ResourceType.WATER, new Need(ResourceType.WATER, currentUnits - waterGenerated));
+		if (waterGenerated < getCurrentUnits()) {
+			currentNeeds.put(ResourceType.WATER, new Need(ResourceType.WATER, getCurrentUnits() - waterGenerated));
 		}
 
 		// Do we have enough food generation?
-		if (foodGenerated < currentUnits) {
-			currentNeeds.put(ResourceType.FOOD, new Need(ResourceType.FOOD, currentUnits - foodGenerated));
+		if (foodGenerated < getCurrentUnits()) {
+			currentNeeds.put(ResourceType.FOOD, new Need(ResourceType.FOOD, getCurrentUnits() - foodGenerated));
 		}
 
 		// Do we have enough shelter generation?
-		if (shelterGenerated < currentUnits) {
-			currentNeeds.put(ResourceType.SHELTER, new Need(ResourceType.SHELTER, currentUnits - shelterGenerated));
+		if (shelterGenerated < getCurrentUnits()) {
+			currentNeeds.put(ResourceType.SHELTER, new Need(ResourceType.SHELTER, getCurrentUnits() - shelterGenerated));
 		}
 
 		// TODO Make weapons a more varied resource, with different types such as
 		// offensive and defensive and make it one per unit
 
-		// Are we generating enough weapons?
-		if (weaponsGenerated < currentUnits) {
-			currentNeeds.put(ResourceType.WEAPONS, new Need(ResourceType.WEAPONS, currentUnits - weaponsGenerated));
+		// Are we generating enough weapons? WE want to aim for one weapon per unit
+		if (weaponsGenerated < getCurrentUnits()) {
+			currentNeeds.put(ResourceType.WEAPONS, new Need(ResourceType.WEAPONS, getCurrentUnits() - weaponsGenerated));
 		}
 
 		// Do we have enough scrap generation? We only need scrap if we have a use for
@@ -204,7 +321,7 @@ public class Faction {
 		sb.append(", ");
 		sb.append("Scrap: " + currentScrap);
 		sb.append(", ");
-		sb.append("Units: " + currentUnits);
+		sb.append("Units: " + getCurrentUnits());
 		sb.append(", ");
 		sb.append("Weapons: " + currentWeapons);
 		sb.append("\n");
@@ -240,6 +357,18 @@ public class Faction {
 		}
 	}
 
+	public ArrayList<Group> getCurrentGroups() {
+		return currentGroups;
+	}
+
+	public void setCurrentGroups(ArrayList<Group> currentGroups) {
+		this.currentGroups = currentGroups;
+	}
+
+	public int getCurrentUnits() {
+		return currentUnits.size();
+	}
+
 	public int getWater() {
 		return currentWater;
 	}
@@ -262,14 +391,6 @@ public class Faction {
 
 	public void setShelter(int shelter) {
 		this.currentShelter = shelter;
-	}
-
-	public int getUnits() {
-		return currentUnits;
-	}
-
-	public void setUnits(int units) {
-		this.currentUnits = units;
 	}
 
 	public ArrayList<ResourceGenerator> getResourceGenerators() {
@@ -303,4 +424,5 @@ public class Faction {
 	public void setName(String name) {
 		this.name = name;
 	}
+
 }
