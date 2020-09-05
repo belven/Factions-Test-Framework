@@ -67,21 +67,20 @@ public class Faction {
 		// TODO make the AI prioritise locations based on needs and possibility of attack
 		// If we have a well but it's at the back of the map, lean towards areas further from the base
 
-		int areasToDefend = ownedResourceGenerators.size();
-		int unitsPerGroup = Math.round(defensiveUnits / areasToDefend);
+		int amountOfTasks = ownedResourceGenerators.size();
+		int unitsPerGroup = Math.round(defensiveUnits / amountOfTasks);
+		
+		// Another issue where we may have an odd number, so add the extras to the first group
+		// It shouldn't make much difference
+		int excessUnits = defensiveUnits % (amountOfTasks * unitsPerGroup);
 
-		for (int group = 0; group < areasToDefend; group++) {
+		for (int group = 0; group < amountOfTasks; group++) {
 			ArrayList<Unit> units = new ArrayList<>();
 			int unitsToAdd = unitsPerGroup;
 
-			if (group == 0) {
-				// Another issue where we may have an odd number, so add the extras to the first group
-				// It shouldn't make much difference
-				int excessUnits = defensiveUnits % (areasToDefend * unitsPerGroup);
-
-				if (excessUnits != 0) {
-					unitsToAdd += excessUnits;
-				}
+			if (excessUnits > 0) {
+				unitsToAdd++;
+				excessUnits--;
 			}
 
 			// unitID should progress from 0 to units.size(), this avoids adding the same unit to multiple groups
@@ -95,20 +94,20 @@ public class Faction {
 			currentGroups.add(new Group(groupID, units, TaskType.DEFENSIVE, null));
 		}
 
-		int offensiveActionsAmount = getOffensiveActionsAmount();
-		unitsPerGroup = Math.round(offensiveUnits / offensiveActionsAmount);
-		for (int group = 0; group < offensiveActionsAmount; group++) {
+		amountOfTasks = getOffensiveActionsAmount();
+		unitsPerGroup = Math.round(offensiveUnits / amountOfTasks);
+
+		// Another issue where we may have an odd number, so add the extras to the first group
+		// It shouldn't make much difference
+		excessUnits = offensiveUnits % (amountOfTasks * unitsPerGroup);
+
+		for (int group = 0; group < amountOfTasks; group++) {
 			ArrayList<Unit> units = new ArrayList<>();
 			int unitsToAdd = unitsPerGroup;
 
-			if (group == 0) {
-				// Another issue where we may have an odd number, so add the extras to the first group
-				// It shouldn't make much difference
-				int excessUnits = offensiveUnits % (offensiveActionsAmount * unitsPerGroup);
-
-				if (excessUnits != 0) {
-					unitsToAdd += excessUnits;
-				}
+			if (excessUnits > 0) {
+				unitsToAdd++;
+				excessUnits--;
 			}
 
 			// unitID should progress from 0 to units.size(), this avoids adding the same unit to multiple groups

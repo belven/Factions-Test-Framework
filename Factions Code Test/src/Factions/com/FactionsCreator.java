@@ -26,7 +26,7 @@ public class FactionsCreator {
 		// Name, Water, Food, Weapons, Scrap, Units, Supplies
 		int currentWater = 50;
 		int currentFood = 50;
-		int currentUnits = 10;
+		int currentUnits = 40;
 
 		factionGreen = new Faction("Green", currentWater, currentFood, 0, 5, currentUnits, createFactionGreenSupplies());
 		factionBlue = new Faction("Blue", currentWater, currentFood, 0, 0, currentUnits, createFactionBlueSupplies());
