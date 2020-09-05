@@ -1,13 +1,16 @@
 package Factions.com;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class FactionsCreator {
 	private ArrayList<Faction> currentFactions = new ArrayList<Faction>();
 	private Faction factionGreen = null;
 	private Faction factionBlue = null;
 	private Faction factionYellow = null;
+	private int unitsPerFaction = 20;
 
 	public FactionsCreator() {
 		setupBasicFactionResources();
@@ -24,13 +27,12 @@ public class FactionsCreator {
 		}
 
 		// Name, Water, Food, Weapons, Scrap, Units, Supplies
-		int currentWater = 50;
-		int currentFood = 50;
-		int currentUnits = 40;
+		int currentWater = unitsPerFaction * 10;
+		int currentFood = unitsPerFaction * 10;
 
-		factionGreen = new Faction("Green", currentWater, currentFood, 0, 5, currentUnits, createFactionGreenSupplies());
-		factionBlue = new Faction("Blue", currentWater, currentFood, 0, 0, currentUnits, createFactionBlueSupplies());
-		factionYellow = new Faction("Yellow", currentWater, currentFood, 0, 0, currentUnits, createFactionYellowSupplies());
+		factionGreen = new Faction("Green", currentWater, currentFood, 0, 0, unitsPerFaction, createFactionGreenSupplies());
+		factionBlue = new Faction("Blue", currentWater, currentFood, 0, 0, unitsPerFaction, createFactionBlueSupplies());
+		factionYellow = new Faction("Yellow", currentWater, currentFood, 0, 0, unitsPerFaction, createFactionYellowSupplies());
 
 		// In theory, Green and Yellow will head to claim Blues water
 		// Blue will try and claim Yellows Food
@@ -41,7 +43,9 @@ public class FactionsCreator {
 
 		factionOutput();
 
-		int day = currentWater / currentUnits;
+		int day = 5;
+
+		long begin = System.currentTimeMillis();
 
 		// TODO I need to make nextDay be closer to every 15 seconds, so the decisions
 		// occur faster and more in real time. This could allow for other stats for
@@ -56,6 +60,8 @@ public class FactionsCreator {
 
 			factionOutput();
 		}
+
+		System.out.println(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - begin));
 	}
 
 	private void factionOutput() {
@@ -78,54 +84,24 @@ public class FactionsCreator {
 	// Green has food
 	private ArrayList<ResourceGenerator> createFactionGreenSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		supplies.add(new ResourceGenerator(20, factionGreen, ResourceType.FOOD));
-		supplies.add(new ResourceGenerator(5, factionGreen, ResourceType.WEAPONS));
+		supplies.add(new ResourceGenerator(unitsPerFaction, factionGreen, ResourceType.FOOD));
+		supplies.add(new ResourceGenerator(unitsPerFaction, factionGreen, ResourceType.SCRAP));
 		return supplies;
 	}
 
 	// Blue has water
 	private ArrayList<ResourceGenerator> createFactionBlueSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		supplies.add(new ResourceGenerator(20, factionBlue, ResourceType.WATER));
+		supplies.add(new ResourceGenerator(unitsPerFaction, factionBlue, ResourceType.WATER));
+		supplies.add(new ResourceGenerator(unitsPerFaction, factionGreen, ResourceType.WEAPONS));
 		return supplies;
 	}
 
 	// Yellow has shelter
 	private ArrayList<ResourceGenerator> createFactionYellowSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		supplies.add(new ResourceGenerator(20, factionYellow, ResourceType.SHELTER));
+		supplies.add(new ResourceGenerator(unitsPerFaction, factionGreen, ResourceType.FOOD));
+		supplies.add(new ResourceGenerator(unitsPerFaction, factionYellow, ResourceType.SHELTER));
 		return supplies;
-	}
-
-	public Faction getFactionA() {
-		return factionGreen;
-	}
-
-	public void setFactionA(Faction factionA) {
-		this.factionGreen = factionA;
-	}
-
-	public Faction getFactionB() {
-		return factionBlue;
-	}
-
-	public void setFactionB(Faction factionB) {
-		this.factionBlue = factionB;
-	}
-
-	public Faction getFactionC() {
-		return factionYellow;
-	}
-
-	public void setFactionC(Faction factionC) {
-		this.factionYellow = factionC;
-	}
-
-	public ArrayList<Faction> getCurrentFactions() {
-		return currentFactions;
-	}
-
-	public void setCurrentFactions(ArrayList<Faction> currentFactions) {
-		this.currentFactions = currentFactions;
 	}
 }

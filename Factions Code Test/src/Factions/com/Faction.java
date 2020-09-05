@@ -54,8 +54,6 @@ public class Faction {
 		int unitID = 0;
 		currentGroups.clear();
 
-		System.out.println(name);
-
 		// Spilt the units in half, this way want to change later
 		int unitSplit = Math.round(getCurrentUnits() / 2);
 		int offensiveUnits = unitSplit;
@@ -69,10 +67,12 @@ public class Faction {
 
 		int amountOfTasks = ownedResourceGenerators.size();
 		int unitsPerGroup = Math.round(defensiveUnits / amountOfTasks);
-		
+
 		// Another issue where we may have an odd number, so add the extras to the first group
 		// It shouldn't make much difference
-		int excessUnits = defensiveUnits % (amountOfTasks * unitsPerGroup);
+
+		int currentUnitsPerGroup = amountOfTasks * unitsPerGroup;
+		int excessUnits = currentUnitsPerGroup != 0 ? defensiveUnits % currentUnitsPerGroup : 0;
 
 		for (int group = 0; group < amountOfTasks; group++) {
 			ArrayList<Unit> units = new ArrayList<>();
@@ -99,7 +99,8 @@ public class Faction {
 
 		// Another issue where we may have an odd number, so add the extras to the first group
 		// It shouldn't make much difference
-		excessUnits = offensiveUnits % (amountOfTasks * unitsPerGroup);
+		currentUnitsPerGroup = amountOfTasks * unitsPerGroup;
+		excessUnits = currentUnitsPerGroup != 0 ? offensiveUnits % currentUnitsPerGroup : 0;
 
 		for (int group = 0; group < amountOfTasks; group++) {
 			ArrayList<Unit> units = new ArrayList<>();
@@ -128,8 +129,6 @@ public class Faction {
 				group.setTask(task);
 			}
 		}
-
-		System.out.println(getCurrentGroups().toString());
 	}
 
 	// Find groups by a task type, either offensive or defensive and one that doesn't have a task already
@@ -325,6 +324,18 @@ public class Faction {
 		sb.append("Weapons: " + currentWeapons);
 		sb.append("\n");
 		sb.append("Needs: " + getNeedsString());
+		sb.append("\n");
+		sb.append(getGroupsString());
+
+		return sb.toString();
+	}
+
+	private String getGroupsString() {
+		StringBuilder sb = new StringBuilder();
+
+		for (Group group : currentGroups) {
+			sb.append(group.toString());
+		}
 
 		return sb.toString();
 	}
@@ -341,11 +352,15 @@ public class Faction {
 		getNeedString(sb, ResourceType.SCRAP);
 
 		// Trim off the extra ", "
-		return sb.toString().substring(0, sb.toString().length() - 2);
+		if (sb.toString().length() > 0) {
+			return sb.toString().substring(0, sb.toString().length() - 2);
+		} else {
+			return "";
+		}
 	}
 
 	private void getNeedString(StringBuilder sb, ResourceType type) {
-		getNeedString(sb, type, true);
+		getNeedString(sb, type, false);
 	}
 
 	private void getNeedString(StringBuilder sb, ResourceType type, boolean showZero) {

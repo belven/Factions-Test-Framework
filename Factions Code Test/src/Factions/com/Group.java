@@ -37,14 +37,12 @@ public class Group {
 		StringBuilder sb = new StringBuilder();
 		String taskText = task != null ? task.toString() : "None";
 		
-		sb.append("Group " + name);
-		sb.append("\n");
-		sb.append("Units " + units.size());
-		sb.append("\n");
+		sb.append("Group " + name + ", ");
+		sb.append("Units " + units.size() + ", ");
 		sb.append("Task " + taskText);
 		sb.append("\n");
-		sb.append(units.toString());
-		sb.append("\n");
+//		sb.append(units.toString());
+//		sb.append("\n");
 
 		return sb.toString();
 	}
