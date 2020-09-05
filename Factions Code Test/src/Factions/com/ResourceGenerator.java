@@ -1,22 +1,22 @@
 package Factions.com;
 
-public class Supply {
-	private int supplyAmount = 5;
+public class ResourceGenerator {
+	private int resourceAmount = 5;
 	private Faction owner = null;
 	private ResourceType type;
 	
-	public Supply(int supplyAmount, Faction owner, ResourceType type) {
-		this.supplyAmount = supplyAmount;
+	public ResourceGenerator(int resourceAmount, Faction owner, ResourceType type) {
+		this.resourceAmount = resourceAmount;
 		this.owner = owner;
 		this.type = type;
 	}
 
-	public int getSupplyAmount() {
-		return supplyAmount;
+	public int getResourceAmount() {
+		return resourceAmount;
 	}
 
-	public void setSupplyAmount(int supplyAmount) {
-		this.supplyAmount = supplyAmount;
+	public void setResourceAmount(int resourceAmount) {
+		this.resourceAmount = resourceAmount;
 	}
 
 	public Faction getOwner() {

@@ -3,7 +3,7 @@ package Factions.com;
 public class Need {
 
 	private ResourceType type;
-	private int amountNeeded = 0;	
+	private int amountNeeded = 0;
 
 	public Need(ResourceType type, int amountNeeded) {
 		super();
@@ -25,6 +25,11 @@ public class Need {
 
 	public void setAmountNeeded(int amountNeeded) {
 		this.amountNeeded = amountNeeded;
+	}
+
+	@Override
+	public String toString() {
+		return amountNeeded + " " + type;
 	}
 
 }

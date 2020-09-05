@@ -5,7 +5,8 @@ import java.util.HashMap;
 
 public class Faction {
 
-	private String name = "";
+	private static final String EMPTY = "";
+	private String name = EMPTY;
 	private int currentWater = 0;
 	private int currentFood = 0;
 	private int currentWeapons = 0;
@@ -16,23 +17,22 @@ public class Faction {
 	private ArrayList<Task> tasks = new ArrayList<>();
 
 	public Faction(String name, int currentWater, int currentFood, int currentWeapons, int currentScrap,
-			int currentShelter, int currentUnits, ArrayList<Supply> supplies) {
+			int currentUnits, ArrayList<ResourceGenerator> supplies) {
 		super();
 		this.name = name;
 		this.currentWater = currentWater;
 		this.currentFood = currentFood;
 		this.currentWeapons = currentWeapons;
 		this.currentScrap = currentScrap;
-		this.currentShelter = currentShelter;
 		this.currentUnits = currentUnits;
-		this.supplies = supplies;
+		this.ownedResourceGenerators = supplies;
 	}
 
-	private ArrayList<Supply> supplies = new ArrayList<>();
+	private ArrayList<ResourceGenerator> ownedResourceGenerators = new ArrayList<>();
 
 	public void nextDay() {
 		// Gain resources
-		calculateBasicResources();
+		calculateTierOneResources();
 
 		// Use resources
 		calculateTierTwoResources();
@@ -44,8 +44,8 @@ public class Faction {
 
 	private void calculateTasks() {
 		tasks.clear();
-		
-		//This is where we define our priority order
+
+		// This is where we define our priority order
 		if (currentNeeds.get(ResourceType.WATER) != null) {
 			tasks.add(new Task(currentNeeds.get(ResourceType.WATER)));
 		}
@@ -71,21 +71,26 @@ public class Faction {
 		// TODO Need to change food so they don't need it every day?? evey 3 days?
 		currentWater -= currentUnits;
 		currentFood -= currentUnits;
+
+		currentFood = Math.max(0, currentFood);
+		currentWater = Math.max(0, currentWater);
 	}
 
 	private void calculateTierTwoResources() {
 		// We need to calculate weapons after getting scrap, as it's dependent on it
-		for (Supply supply : supplies) {
+		for (ResourceGenerator supply : ownedResourceGenerators) {
 			switch (supply.getType()) {
 			case WEAPONS: {
 				// Only add weapons if we have scrap for it
-				int weaponProductionAmount = supply.getSupplyAmount();
+				int weaponProductionAmount = supply.getResourceAmount();
 
 				// This will work out how many weapons we make
 				// If we have 4 scrap but can make 5 weapons, we'll use 4 scrap and make 4
 				// weapons.
 				// If we have no weapons generated then this will be 0
 				int weaponsCreated = Math.min(currentScrap, weaponProductionAmount);
+
+				System.out.println("Weapons Created: " + weaponsCreated);
 
 				currentWeapons += weaponsCreated;
 				currentScrap -= weaponsCreated;
@@ -95,20 +100,28 @@ public class Faction {
 				break;
 			}
 		}
+
+		currentScrap = Math.max(0, currentScrap);
 	}
 
-	private void calculateBasicResources() {
+	private void calculateTierOneResources() {
+		// As Shelter is static we need to reset this value to 0, to work out our total
+		currentShelter = 0;
+
 		// Add Supplies
-		for (Supply supply : supplies) {
+		for (ResourceGenerator supply : ownedResourceGenerators) {
 			switch (supply.getType()) {
 			case WATER:
-				currentWater += supply.getSupplyAmount();
+				currentWater += supply.getResourceAmount();
 				break;
 			case FOOD:
-				currentFood += supply.getSupplyAmount();
+				currentFood += supply.getResourceAmount();
 				break;
 			case SCRAP:
-				currentScrap += supply.getSupplyAmount();
+				currentScrap += supply.getResourceAmount();
+				break;
+			case SHELTER:
+				currentShelter += supply.getResourceAmount();
 				break;
 			default:
 				break;
@@ -123,21 +136,25 @@ public class Faction {
 		int foodGenerated = 0;
 		int weaponsGenerated = 0;
 		int scrapGenerated = 0;
+		int shelterGenerated = 0;
 
 		// Calculate our current resource generation
-		for (Supply supply : supplies) {
+		for (ResourceGenerator supply : ownedResourceGenerators) {
 			switch (supply.getType()) {
 			case WATER:
-				waterGenerated += supply.getSupplyAmount();
+				waterGenerated += supply.getResourceAmount();
 				break;
 			case FOOD:
-				foodGenerated += supply.getSupplyAmount();
+				foodGenerated += supply.getResourceAmount();
 				break;
 			case WEAPONS:
-				weaponsGenerated += supply.getSupplyAmount();
+				weaponsGenerated += supply.getResourceAmount();
 				break;
 			case SCRAP:
-				scrapGenerated += supply.getSupplyAmount();
+				scrapGenerated += supply.getResourceAmount();
+				break;
+			case SHELTER:
+				shelterGenerated += supply.getResourceAmount();
 				break;
 			default:
 				break;
@@ -154,18 +171,23 @@ public class Faction {
 			currentNeeds.put(ResourceType.FOOD, new Need(ResourceType.FOOD, currentUnits - foodGenerated));
 		}
 
+		// Do we have enough shelter generation?
+		if (shelterGenerated < currentUnits) {
+			currentNeeds.put(ResourceType.SHELTER, new Need(ResourceType.SHELTER, currentUnits - shelterGenerated));
+		}
+
 		// TODO Make weapons a more varied resource, with different types such as
 		// offensive and defensive and make it one per unit
 
-		// Do we have enough weapon generation? Weapons are only needed if we have none
-		if (weaponsGenerated == 0) {
-			currentNeeds.put(ResourceType.WEAPONS, new Need(ResourceType.WEAPONS, 1));
+		// Are we generating enough weapons?
+		if (weaponsGenerated < currentUnits) {
+			currentNeeds.put(ResourceType.WEAPONS, new Need(ResourceType.WEAPONS, currentUnits - weaponsGenerated));
 		}
 
 		// Do we have enough scrap generation? We only need scrap if we have a use for
 		// it, in this case if we have a weapons supplier we need a scrap supplier
 		// TODO add in needs for armour
-		if (weaponsGenerated == 1 && scrapGenerated < currentUnits) {
+		if (scrapGenerated < weaponsGenerated) {
 			currentNeeds.put(ResourceType.SCRAP, new Need(ResourceType.SCRAP, weaponsGenerated));
 		}
 	}
@@ -176,21 +198,47 @@ public class Faction {
 		sb.append(name);
 		sb.append("\n");
 		sb.append("Water: " + currentWater);
-		sb.append("\n");
+		sb.append(", ");
 		sb.append("Food: " + currentFood);
-		sb.append("\n");
+		sb.append(", ");
 		sb.append("Shelter: " + currentShelter);
-		sb.append("\n");
+		sb.append(", ");
 		sb.append("Scrap: " + currentScrap);
-		sb.append("\n");
+		sb.append(", ");
 		sb.append("Units: " + currentUnits);
-		sb.append("\n");
+		sb.append(", ");
 		sb.append("Weapons: " + currentWeapons);
 		sb.append("\n");
-		sb.append("Needs: " + currentNeeds.toString());
-		sb.append("\n");
+		sb.append("Needs: " + getNeedsString());
 
 		return sb.toString();
+	}
+
+	private String getNeedsString() {
+		StringBuilder sb = new StringBuilder();
+
+		// Made a nice clean string generator for each need. This helps align them to
+		// clearly compare them in the console and keeps them in the same order
+		getNeedString(sb, ResourceType.WATER);
+		getNeedString(sb, ResourceType.FOOD);
+		getNeedString(sb, ResourceType.SHELTER);
+		getNeedString(sb, ResourceType.WEAPONS);
+		getNeedString(sb, ResourceType.SCRAP);
+
+		// Trim off the extra ", "
+		return sb.toString().substring(0, sb.toString().length() - 2);
+	}
+
+	private void getNeedString(StringBuilder sb, ResourceType type) {
+		getNeedString(sb, type, true);
+	}
+
+	private void getNeedString(StringBuilder sb, ResourceType type, boolean showZero) {
+		if (currentNeeds.get(type) != null) {
+			sb.append(currentNeeds.get(type).getAmountNeeded() + " " + type.toString() + ", ");
+		} else if (showZero) {
+			sb.append(0 + " " + type.toString() + ", ");
+		}
 	}
 
 	public int getWater() {
@@ -225,12 +273,12 @@ public class Faction {
 		this.currentUnits = units;
 	}
 
-	public ArrayList<Supply> getSupplies() {
-		return supplies;
+	public ArrayList<ResourceGenerator> getResourceGenerators() {
+		return ownedResourceGenerators;
 	}
 
-	public void setSupplies(ArrayList<Supply> supplies) {
-		this.supplies = supplies;
+	public void setResourceGenerators(ArrayList<ResourceGenerator> resourceGenerators) {
+		this.ownedResourceGenerators = resourceGenerators;
 	}
 
 	public int getWeapons() {
