@@ -5,9 +5,9 @@ public class Unit {
 	private int water = 1;
 	private int food = 3;
 	private boolean hasCraftedWeapon = false;
-	
+
 	public Unit() {
-		
+
 	}
 
 	public int getHealth() {

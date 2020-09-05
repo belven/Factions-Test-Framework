@@ -28,7 +28,7 @@ public class FactionsCreator {
 		int currentWater = 50;
 		int currentFood = 50;
 		int currentUnits = 10;
-		
+
 		factionGreen = new Faction("Green", currentWater, currentFood, 0, 5, currentUnits, createFactionGreenSupplies());
 		factionBlue = new Faction("Blue", currentWater, currentFood, 0, 0, currentUnits, createFactionBlueSupplies());
 		factionYellow = new Faction("Yellow", currentWater, currentFood, 0, 0, currentUnits, createFactionYellowSupplies());
@@ -44,9 +44,12 @@ public class FactionsCreator {
 
 		int day = currentWater / currentUnits;
 
+		// TODO I need to make nextDay be closer to every 15 seconds, so the decisions
+		// occur faster and more in real time. This could allow for other stats for
+		// factions, like a politics stat that changes how quickly decisions are made
 		for (int i = 1; i < day + 1; i++) {
 			System.out.println("\n");
-			System.out.println("------------------- Day " + i +" ------------------");
+			System.out.println("------------------- Day " + i + " ------------------");
 
 			factionGreen.nextDay();
 			factionBlue.nextDay();
@@ -57,19 +60,19 @@ public class FactionsCreator {
 	}
 
 	private void factionOutput() {
-		//System.out.println("------------------- Green Start ------------------");
+		// System.out.println("------------------- Green Start ------------------");
 		System.out.println(factionGreen.toString());
-		//System.out.println("------------------- Green End ------------------");
+		// System.out.println("------------------- Green End ------------------");
 		System.out.println("\n");
 
-		//System.out.println("------------------- Blue Start ------------------");
+		// System.out.println("------------------- Blue Start ------------------");
 		System.out.println(factionBlue.toString());
-		//System.out.println("------------------- Blue End ------------------");
+		// System.out.println("------------------- Blue End ------------------");
 		System.out.println("\n");
 
-		//System.out.println("------------------- Yellow Start ------------------");
+		// System.out.println("------------------- Yellow Start ------------------");
 		System.out.println(factionYellow.toString());
-		//System.out.println("------------------- Yellow End ------------------");
+		// System.out.println("------------------- Yellow End ------------------");
 		System.out.println("\n");
 	}
 

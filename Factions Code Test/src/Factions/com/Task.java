@@ -15,6 +15,5 @@ public class Task {
 	public void setNeed(Need need) {
 		this.need = need;
 	}
-	
 
 }

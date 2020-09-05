@@ -16,8 +16,7 @@ public class Faction {
 	private HashMap<ResourceType, Need> currentNeeds = new HashMap<ResourceType, Need>();
 	private ArrayList<Task> tasks = new ArrayList<>();
 
-	public Faction(String name, int currentWater, int currentFood, int currentWeapons, int currentScrap,
-			int currentUnits, ArrayList<ResourceGenerator> supplies) {
+	public Faction(String name, int currentWater, int currentFood, int currentWeapons, int currentScrap, int currentUnits, ArrayList<ResourceGenerator> supplies) {
 		super();
 		this.name = name;
 		this.currentWater = currentWater;

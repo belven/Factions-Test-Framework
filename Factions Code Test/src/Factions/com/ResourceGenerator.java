@@ -4,7 +4,7 @@ public class ResourceGenerator {
 	private int resourceAmount = 5;
 	private Faction owner = null;
 	private ResourceType type;
-	
+
 	public ResourceGenerator(int resourceAmount, Faction owner, ResourceType type) {
 		this.resourceAmount = resourceAmount;
 		this.owner = owner;
