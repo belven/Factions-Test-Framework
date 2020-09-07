@@ -17,4 +17,10 @@ public class DefensiveTask extends Task {
 		this.resourceGenerator = resourceGenerator;
 	}
 
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return super.toString() + " protect " + resourceGenerator.getType() + " resource";
+	}
+
 }

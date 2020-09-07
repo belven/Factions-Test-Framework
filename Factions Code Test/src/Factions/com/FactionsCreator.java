@@ -9,7 +9,7 @@ public class FactionsCreator {
 	private Faction factionBlue = null;
 	private Faction factionYellow = null;
 
-	private int unitsPerFaction = 50;
+	private int unitsPerFaction = 17;
 
 	private ArrayList<Faction> currentFactions = new ArrayList<Faction>();
 	private ArrayList<ResourceGenerator> resourceGenerators = new ArrayList<>();
@@ -53,7 +53,7 @@ public class FactionsCreator {
 	public void startCycles() {
 		factionOutput();
 
-		int days = 1;
+		int days = 10;
 
 		long begin = System.currentTimeMillis();
 
@@ -75,20 +75,9 @@ public class FactionsCreator {
 	}
 
 	private void factionOutput() {
-		// System.out.println("------------------- Green Start ------------------");
 		System.out.println(factionGreen.toString());
-		// System.out.println("------------------- Green End ------------------");
-		System.out.println("\n");
-
-		// System.out.println("------------------- Blue Start ------------------");
 		System.out.println(factionBlue.toString());
-		// System.out.println("------------------- Blue End ------------------");
-		System.out.println("\n");
-
-		// System.out.println("------------------- Yellow Start ------------------");
 		System.out.println(factionYellow.toString());
-		// System.out.println("------------------- Yellow End ------------------");
-		System.out.println("\n");
 	}
 
 	// Green has food

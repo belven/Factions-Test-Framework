@@ -66,8 +66,9 @@ public class Faction {
 
 		int unitsPerAction = getCurrentUnits() / totalActions;
 
-		int maxUnitsPerGroup = Math.max(1, unitsPerAction);
-		int minUnitsPerGroup = Math.max(1, Math.round(getCurrentUnits() * 0.1f));
+		// int minUnitsPerGroup = Math.max(1, Math.round(getCurrentUnits() * 0.1f));
+		int minUnitsPerGroup = 3;
+		int maxUnitsPerGroup = Math.max(minUnitsPerGroup, Math.max(1, unitsPerAction));
 
 		int offensiveUnits = offensiveActionsAmount * maxUnitsPerGroup;
 
@@ -78,8 +79,8 @@ public class Faction {
 		// TODO make the AI prioritise locations based on needs and possibility of attack
 		// If we have a well but it's at the back of the map, lean towards areas further from the base
 
-		unitID = assignSubGroups(unitID, defensiveUnits, defensiveActionsAmount, TaskType.DEFENSIVE, minUnitsPerGroup, maxUnitsPerGroup);
 		unitID = assignSubGroups(unitID, offensiveUnits, offensiveActionsAmount, TaskType.OFFENSIVE, minUnitsPerGroup, maxUnitsPerGroup);
+		unitID = assignSubGroups(unitID, defensiveUnits, defensiveActionsAmount, TaskType.DEFENSIVE, minUnitsPerGroup, maxUnitsPerGroup);
 
 		for (Task task : tasks) {
 			Group group = getAvalibleGroupByTaskType(task.getType());

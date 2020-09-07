@@ -16,4 +16,9 @@ public class OffensiveTask extends Task {
 		this.need = need;
 	}
 
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return super.toString() + " get " + need.toString();
+	}
 }

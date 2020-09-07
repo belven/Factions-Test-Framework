@@ -36,13 +36,13 @@ public class Group {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		String taskText = task != null ? task.toString() : "None";
-		
+
 		sb.append("Group " + name + ", ");
 		sb.append("Units " + units.size() + ", ");
 		sb.append("Task " + taskText);
 		sb.append("\n");
-//		sb.append(units.toString());
-//		sb.append("\n");
+		// sb.append(units.toString());
+		// sb.append("\n");
 
 		return sb.toString();
 	}

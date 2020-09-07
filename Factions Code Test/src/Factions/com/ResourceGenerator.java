@@ -35,4 +35,13 @@ public class ResourceGenerator {
 		this.type = type;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(type + " " + resourceAmount);
+		sb.append("\n");
+
+		return sb.toString();
+	}
 }
