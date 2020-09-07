@@ -51,7 +51,7 @@ public class FactionsCreator {
 	public void startCycles() {
 		factionOutput();
 
-		int days = 30;
+		int days = 500;
 
 		long begin = System.currentTimeMillis();
 
@@ -64,6 +64,10 @@ public class FactionsCreator {
 			factionGreen.nextDay();
 			factionBlue.nextDay();
 			factionYellow.nextDay();
+
+			FactionsCombat.getINSTANCE().performOffensiveActions(factionGreen);
+			FactionsCombat.getINSTANCE().performOffensiveActions(factionBlue);
+			FactionsCombat.getINSTANCE().performOffensiveActions(factionYellow);
 
 			factionOutput();
 		}
@@ -80,26 +84,31 @@ public class FactionsCreator {
 	// Green
 	private ArrayList<ResourceGenerator> createFactionGreenSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		Faction faction = factionGreen;
-		supplies.add(new ResourceGenerator(unitsPerFaction, faction, ResourceType.FOOD));
-		supplies.add(new ResourceGenerator(unitsPerFaction, faction, ResourceType.SCRAP));
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.FOOD));
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SCRAP));
 		return supplies;
 	}
 
 	// Blue
 	private ArrayList<ResourceGenerator> createFactionBlueSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		Faction faction = factionBlue;
-		supplies.add(new ResourceGenerator(unitsPerFaction, faction, ResourceType.WATER));
-		supplies.add(new ResourceGenerator(unitsPerFaction, faction, ResourceType.WEAPONS));
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WATER));
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WEAPONS));
 		return supplies;
 	}
 
 	// Yellow
 	private ArrayList<ResourceGenerator> createFactionYellowSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		Faction faction = factionYellow;
-		supplies.add(new ResourceGenerator(unitsPerFaction, faction, ResourceType.SHELTER));
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SHELTER));
 		return supplies;
+	}
+
+	public ArrayList<ResourceGenerator> getResourceGenerators() {
+		return resourceGenerators;
+	}
+
+	public void setResourceGenerators(ArrayList<ResourceGenerator> resourceGenerators) {
+		this.resourceGenerators = resourceGenerators;
 	}
 }

@@ -29,6 +29,10 @@ public class Faction {
 		this.currentScrap = currentScrap;
 		this.ownedResourceGenerators = supplies;
 
+		for (ResourceGenerator rg : ownedResourceGenerators) {
+			rg.setOwner(this);
+		}
+
 		for (int i = 0; i < amountOfUnits; i++) {
 			String id = String.valueOf(i + 1);
 			currentUnits.add(new Unit(id));
@@ -125,7 +129,7 @@ public class Faction {
 
 			if (units.size() != 0) {
 				String groupID = String.valueOf(currentGroups.size() + 1);
-				currentGroups.add(new Group(groupID, units, type, null));
+				currentGroups.add(new Group(groupID, units, type, null, this));
 			}
 		}
 		return unitID;
@@ -311,7 +315,7 @@ public class Faction {
 		StringBuilder sb = new StringBuilder();
 		sb.append(name);
 		sb.append("\n");
-		sb.append("Current Supplis: ");
+		sb.append("Current Supplies: ");
 		sb.append("Water: " + currentWater);
 		sb.append(", ");
 		sb.append("Food: " + currentFood);
@@ -324,9 +328,11 @@ public class Faction {
 		sb.append(", ");
 		sb.append("Weapons: " + currentWeapons);
 		sb.append("\n");
-		sb.append("Needs: " + getNeedsString());
+//		sb.append("Needs: " + getNeedsString());
+//		sb.append("\n");
+		sb.append("Claims: " + getResourceGenerators().size());
 		sb.append("\n");
-		sb.append(getGroupsString());
+		// sb.append(getGroupsString());
 
 		return sb.toString();
 	}

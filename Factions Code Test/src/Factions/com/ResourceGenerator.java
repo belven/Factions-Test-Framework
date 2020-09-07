@@ -5,10 +5,9 @@ public class ResourceGenerator {
 	private Faction owner = null;
 	private ResourceType type;
 
-	public ResourceGenerator(int resourceAmount, Faction owner, ResourceType type) {
-		this.resourceAmount = resourceAmount;
-		this.owner = owner;
-		this.type = type;
+	public ResourceGenerator(int newResourceAmount, ResourceType newType) {
+		this.resourceAmount = newResourceAmount;
+		this.type = newType;
 	}
 
 	public int getResourceAmount() {
@@ -24,7 +23,15 @@ public class ResourceGenerator {
 	}
 
 	public void setOwner(Faction owner) {
+		if (this.owner != null) {
+			this.owner.getResourceGenerators().remove(this);
+		}
+
 		this.owner = owner;
+
+		if (!this.owner.getResourceGenerators().contains(this))
+			this.owner.getResourceGenerators().add(this);
+
 	}
 
 	public ResourceType getType() {

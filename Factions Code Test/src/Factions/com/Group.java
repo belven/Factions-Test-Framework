@@ -7,13 +7,15 @@ public class Group {
 	private ArrayList<Unit> units = new ArrayList<>();
 	private Task task;
 	private TaskType groupType;
+	private Faction owner;
 
-	public Group(String name, ArrayList<Unit> units, TaskType newGroupType, Task newTask) {
+	public Group(String name, ArrayList<Unit> units, TaskType newGroupType, Task newTask, Faction newOwner) {
 		super();
 		this.name = name;
 		this.units = units;
 		this.setTask(newTask);
 		this.setGroupType(newGroupType);
+		this.setOwner(newOwner);
 	}
 
 	public ArrayList<Unit> getUnits() {
@@ -61,5 +63,13 @@ public class Group {
 
 	public void setGroupType(TaskType groupType) {
 		this.groupType = groupType;
+	}
+
+	public Faction getOwner() {
+		return owner;
+	}
+
+	public void setOwner(Faction owner) {
+		this.owner = owner;
 	}
 }
