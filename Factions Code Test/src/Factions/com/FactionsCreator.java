@@ -9,7 +9,7 @@ public class FactionsCreator {
 	private Faction factionBlue = null;
 	private Faction factionYellow = null;
 
-	private int unitsPerFaction = 17;
+	private int unitsPerFaction = 15;
 
 	private ArrayList<Faction> currentFactions = new ArrayList<Faction>();
 	private ArrayList<ResourceGenerator> resourceGenerators = new ArrayList<>();
@@ -38,12 +38,10 @@ public class FactionsCreator {
 		factionBlue = new Faction("Blue", currentWater, currentFood, 0, 0, unitsPerFaction, createFactionBlueSupplies());
 		factionYellow = new Faction("Yellow", currentWater, currentFood, 0, 0, unitsPerFaction, createFactionYellowSupplies());
 
+		// Get a master list of all resources, this will be used for look-ups later when I implement attacking
 		resourceGenerators.addAll(factionGreen.getResourceGenerators());
 		resourceGenerators.addAll(factionBlue.getResourceGenerators());
 		resourceGenerators.addAll(factionYellow.getResourceGenerators());
-
-		// In theory, Green and Yellow will head to claim Blues water
-		// Blue will try and claim Yellows Food
 
 		currentFactions.add(factionGreen);
 		currentFactions.add(factionBlue);
@@ -53,7 +51,7 @@ public class FactionsCreator {
 	public void startCycles() {
 		factionOutput();
 
-		int days = 10;
+		int days = 30;
 
 		long begin = System.currentTimeMillis();
 
@@ -61,7 +59,6 @@ public class FactionsCreator {
 		// occur faster and more in real time. This could allow for other stats for
 		// factions, like a politics stat that changes how quickly decisions are made
 		for (int i = 1; i < days + 1; i++) {
-			System.out.println("\n");
 			System.out.println("------------------- Day " + i + " ------------------");
 
 			factionGreen.nextDay();
@@ -80,27 +77,29 @@ public class FactionsCreator {
 		System.out.println(factionYellow.toString());
 	}
 
-	// Green has food
+	// Green
 	private ArrayList<ResourceGenerator> createFactionGreenSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		supplies.add(new ResourceGenerator(unitsPerFaction, factionGreen, ResourceType.FOOD));
-		supplies.add(new ResourceGenerator(unitsPerFaction, factionGreen, ResourceType.SCRAP));
+		Faction faction = factionGreen;
+		supplies.add(new ResourceGenerator(unitsPerFaction, faction, ResourceType.FOOD));
+		supplies.add(new ResourceGenerator(unitsPerFaction, faction, ResourceType.SCRAP));
 		return supplies;
 	}
 
-	// Blue has water
+	// Blue
 	private ArrayList<ResourceGenerator> createFactionBlueSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		supplies.add(new ResourceGenerator(unitsPerFaction, factionBlue, ResourceType.WATER));
-		supplies.add(new ResourceGenerator(unitsPerFaction, factionGreen, ResourceType.WEAPONS));
-		supplies.add(new ResourceGenerator(unitsPerFaction, factionGreen, ResourceType.SCRAP));
+		Faction faction = factionBlue;
+		supplies.add(new ResourceGenerator(unitsPerFaction, faction, ResourceType.WATER));
+		supplies.add(new ResourceGenerator(unitsPerFaction, faction, ResourceType.WEAPONS));
 		return supplies;
 	}
 
-	// Yellow has shelter
+	// Yellow
 	private ArrayList<ResourceGenerator> createFactionYellowSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		supplies.add(new ResourceGenerator(unitsPerFaction, factionGreen, ResourceType.FOOD));
+		Faction faction = factionYellow;
+		supplies.add(new ResourceGenerator(unitsPerFaction, faction, ResourceType.SHELTER));
 		return supplies;
 	}
 }

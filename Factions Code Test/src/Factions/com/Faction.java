@@ -43,8 +43,9 @@ public class Faction {
 
 		// Use resources
 		calculateTierTwoResources();
-
 		calculateUnitNeeds();
+
+		// Work out our current needs
 		calculateNeeds();
 	}
 
@@ -92,6 +93,10 @@ public class Faction {
 	}
 
 	private int assignSubGroups(int unitID, int unitsAvalible, int amountOfTasks, TaskType type, int minGroupSize, int maxGroupSize) {
+		// A rare case but we may have units and own nothing
+		if (amountOfTasks == 0)
+			return unitID;
+
 		// Limit the units per group
 		int unitsPerGroup = Math.min(maxGroupSize, Math.max(minGroupSize, Math.round(unitsAvalible / amountOfTasks)));
 
