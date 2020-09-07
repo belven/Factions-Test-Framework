@@ -34,9 +34,10 @@ public class Faction {
 			currentUnits.add(new Unit(id));
 		}
 
+		calculateResourcesAndNeeds();
 	}
 
-	public void nextDay() {
+	private void calculateResourcesAndNeeds() {
 		// Gain resources
 		calculateTierOneResources();
 
@@ -45,82 +46,40 @@ public class Faction {
 
 		calculateUnitNeeds();
 		calculateNeeds();
+	}
+
+	public void nextDay() {
+		calculateResourcesAndNeeds();
 		calculateTasks();
 		assignGroups();
-
 	}
 
 	private void assignGroups() {
 		int unitID = 0;
 		currentGroups.clear();
 
-		// Spilt the units in half, this way want to change later
-		int unitSplit = Math.round(getCurrentUnits() / 2);
-		int offensiveUnits = unitSplit;
+		int offensiveActionsAmount = getOffensiveActionsAmount();
+		int defensiveActionsAmount = ownedResourceGenerators.size();
 
-		// If we have 11 units and unitSplit is 6, then we want the remainder to be the defensiveUnits
-		int defensiveUnits = getCurrentUnits() - unitSplit;
+		// Max units will be the total amount of units / the sum of both tasks. If we have 5 tasks and 10 units, 2 units should be in each group
+		int totalActions = offensiveActionsAmount + defensiveActionsAmount;
+
+		int unitsPerAction = getCurrentUnits() / totalActions;
+
+		int maxUnitsPerGroup = Math.max(1, unitsPerAction);
+		int minUnitsPerGroup = Math.max(1, Math.round(getCurrentUnits() * 0.1f));
+
+		int offensiveUnits = offensiveActionsAmount * maxUnitsPerGroup;
+
+		// If we have 11 units and offensiveUnits is 6, then we want the remainder to be the defensiveUnits
+		int defensiveUnits = getCurrentUnits() - offensiveUnits;
 
 		// Split up the defensiveUnits between our resource generators
 		// TODO make the AI prioritise locations based on needs and possibility of attack
 		// If we have a well but it's at the back of the map, lean towards areas further from the base
 
-		int amountOfTasks = ownedResourceGenerators.size();
-		int unitsPerGroup = Math.round(defensiveUnits / amountOfTasks);
-
-		// Another issue where we may have an odd number, so add the extras to the first group
-		// It shouldn't make much difference
-
-		int currentUnitsPerGroup = amountOfTasks * unitsPerGroup;
-		int excessUnits = currentUnitsPerGroup != 0 ? defensiveUnits % currentUnitsPerGroup : 0;
-
-		for (int group = 0; group < amountOfTasks; group++) {
-			ArrayList<Unit> units = new ArrayList<>();
-			int unitsToAdd = unitsPerGroup;
-
-			if (excessUnits > 0) {
-				unitsToAdd++;
-				excessUnits--;
-			}
-
-			// unitID should progress from 0 to units.size(), this avoids adding the same unit to multiple groups
-			// units.size() < unitsToAdd should only add units until we've reached unitsToAdd
-			for (; units.size() < unitsToAdd; unitID++) {
-				Unit unit = currentUnits.get(unitID);
-				units.add(unit);
-			}
-
-			String groupID = String.valueOf(currentGroups.size() + 1);
-			currentGroups.add(new Group(groupID, units, TaskType.DEFENSIVE, null));
-		}
-
-		amountOfTasks = getOffensiveActionsAmount();
-		unitsPerGroup = Math.round(offensiveUnits / amountOfTasks);
-
-		// Another issue where we may have an odd number, so add the extras to the first group
-		// It shouldn't make much difference
-		currentUnitsPerGroup = amountOfTasks * unitsPerGroup;
-		excessUnits = currentUnitsPerGroup != 0 ? offensiveUnits % currentUnitsPerGroup : 0;
-
-		for (int group = 0; group < amountOfTasks; group++) {
-			ArrayList<Unit> units = new ArrayList<>();
-			int unitsToAdd = unitsPerGroup;
-
-			if (excessUnits > 0) {
-				unitsToAdd++;
-				excessUnits--;
-			}
-
-			// unitID should progress from 0 to units.size(), this avoids adding the same unit to multiple groups
-			// units.size() < unitsToAdd should only add units until we've reached unitsToAdd
-			for (; units.size() < unitsToAdd; unitID++) {
-				Unit unit = currentUnits.get(unitID);
-				units.add(unit);
-			}
-
-			String groupID = String.valueOf(currentGroups.size() + 1);
-			currentGroups.add(new Group(groupID, units, TaskType.OFFENSIVE, null));
-		}
+		unitID = assignSubGroups(unitID, defensiveUnits, defensiveActionsAmount, TaskType.DEFENSIVE, minUnitsPerGroup, maxUnitsPerGroup);
+		unitID = assignSubGroups(unitID, offensiveUnits, offensiveActionsAmount, TaskType.OFFENSIVE, minUnitsPerGroup, maxUnitsPerGroup);
 
 		for (Task task : tasks) {
 			Group group = getAvalibleGroupByTaskType(task.getType());
@@ -129,6 +88,41 @@ public class Faction {
 				group.setTask(task);
 			}
 		}
+	}
+
+	private int assignSubGroups(int unitID, int unitsAvalible, int amountOfTasks, TaskType type, int minGroupSize, int maxGroupSize) {
+		// Limit the units per group
+		int unitsPerGroup = Math.min(maxGroupSize, Math.max(minGroupSize, Math.round(unitsAvalible / amountOfTasks)));
+
+		// Another issue where we may have an odd number, so add the extras to the first group
+		// It shouldn't make much difference
+
+		int currentUnitsPerGroup = amountOfTasks * unitsPerGroup;
+		int excessUnits = currentUnitsPerGroup != 0 ? unitsAvalible % currentUnitsPerGroup : 0;
+
+		for (int group = 0; group < amountOfTasks; group++) {
+			ArrayList<Unit> units = new ArrayList<>();
+			int unitsToAdd = unitsPerGroup;
+
+			if (excessUnits > 0) {
+				unitsToAdd++;
+				excessUnits--;
+			}
+
+			// unitID should progress from 0 to units.size(), this avoids adding the same unit to multiple groups
+			// units.size() < unitsToAdd should only add units until we've reached unitsToAdd
+			// TODO We now have a situation with units not being assigned to a task at all, is this an issue??
+			for (; units.size() < unitsToAdd && currentUnits.size() > unitID; unitID++) {
+				Unit unit = currentUnits.get(unitID);
+				units.add(unit);
+			}
+
+			if (units.size() != 0) {
+				String groupID = String.valueOf(currentGroups.size() + 1);
+				currentGroups.add(new Group(groupID, units, type, null));
+			}
+		}
+		return unitID;
 	}
 
 	// Find groups by a task type, either offensive or defensive and one that doesn't have a task already
@@ -311,6 +305,7 @@ public class Faction {
 		StringBuilder sb = new StringBuilder();
 		sb.append(name);
 		sb.append("\n");
+		sb.append("Current Supplis: ");
 		sb.append("Water: " + currentWater);
 		sb.append(", ");
 		sb.append("Food: " + currentFood);
