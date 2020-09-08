@@ -21,26 +21,26 @@ public class Faction {
 	private ArrayList<ResourceGenerator> ownedResourceGenerators = new ArrayList<>();
 
 	private HashMap<ResourceType, Need> currentNeeds = new HashMap<ResourceType, Need>();
-	
+
 	final String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 	final java.util.Random rand = new java.util.Random();
 
-	// consider using a Map<String,Boolean> to say whether the identifier is being used or not 
+	// consider using a Map<String,Boolean> to say whether the identifier is being used or not
 	final Set<String> identifiers = new HashSet<String>();
 
 	public String randomIdentifier() {
-	    StringBuilder builder = new StringBuilder();
-	    while(builder.toString().length() == 0) {
-	        int length = rand.nextInt(5)+5;
-	        for(int i = 0; i < length; i++) {
-	            builder.append(lexicon.charAt(rand.nextInt(lexicon.length())));
-	        }
-	        if(identifiers.contains(builder.toString())) {
-	            builder = new StringBuilder();
-	        }
-	    }
-	    return builder.toString();
+		StringBuilder builder = new StringBuilder();
+		while (builder.toString().length() == 0) {
+			int length = rand.nextInt(5) + 5;
+			for (int i = 0; i < length; i++) {
+				builder.append(lexicon.charAt(rand.nextInt(lexicon.length())));
+			}
+			if (identifiers.contains(builder.toString())) {
+				builder = new StringBuilder();
+			}
+		}
+		return builder.toString();
 	}
 
 	public Faction(String name, int currentWater, int currentFood, int currentWeapons, int currentScrap, int amountOfUnits, ArrayList<ResourceGenerator> supplies) {
@@ -57,7 +57,6 @@ public class Faction {
 		}
 
 		for (int i = 0; i < amountOfUnits; i++) {
-			String id = String.valueOf(i + 1);
 			currentUnits.add(new Unit(randomIdentifier()));
 		}
 
@@ -72,17 +71,35 @@ public class Faction {
 		calculateTierTwoResources();
 		calculateUnitNeeds();
 		increaseUnits();
+		assignWeapons();
 
 		// Work out our current needs
 		calculateNeeds();
 	}
 
+	private void assignWeapons() {
+		for (Unit u : currentUnits) {
+			if (currentWeapons > 0 && !u.hasCraftedWeapon()) {
+				u.setHasCraftedWeapon(true);
+				currentWeapons--;
+			}
+		}
+	}
+
 	private void increaseUnits() {
-		for (int i = 0; i < (getCurrentUnits() / 4); i++) {
-			String id = String.valueOf(i + 1);
-			currentUnits.add(new Unit(randomIdentifier()));
+		int currentUnits2 = getCurrentUnits();
+		int unitsToAdd = Math.max(4, currentUnits2 / 4);
+
+		for (int i = 0; i < unitsToAdd && unitsToAdd < getShelter(); i++) {
+			double rand = Math.random() % 100;
+			if (rand > .51) {
+				currentUnits.add(new Unit(randomIdentifier()));
+			}
 		}
 
+		int unitsGained = getCurrentUnits() - getCurrentUnits();
+		if (unitsGained > 0)
+			System.out.println("Faction " + getName() + " gained " + unitsGained + " units");
 	}
 
 	public void nextDay() {
@@ -222,6 +239,8 @@ public class Faction {
 
 	private void calculateUnitNeeds() {
 		for (Unit u : currentUnits) {
+			u.setHealth(u.getHealth() + 1);
+
 			if (u.getWater() > 0) {
 				// Loose Water
 				u.setWater(u.getWater() - 1);
@@ -257,12 +276,13 @@ public class Faction {
 		for (Unit ourUnit : currentUnits) {
 			if (ourUnit.getHealth() <= 0) {
 				deadUnits.add(ourUnit);
-				System.out.println(ourUnit.getName() + " in faction " + name + " died of natural causes");
+				// System.out.println(ourUnit.getName() + " in faction " + name + " died of natural causes");
 			}
 		}
-		if (deadUnits.size() > 0) {
-			System.out.println("\n");
 
+		if (deadUnits.size() > 0) {
+			System.out.println("Faction " + getName() + " had " + deadUnits.size() + " units die of natural causes");
+			System.out.println("\n");
 			currentUnits.removeAll(deadUnits);
 		}
 	}
@@ -399,8 +419,8 @@ public class Faction {
 		sb.append(", ");
 		sb.append("Weapons: " + currentWeapons);
 		sb.append("\n");
-		sb.append("Needs: " + getNeedsString());
-		sb.append("\n");
+//		sb.append("Needs: " + getNeedsString());
+//		sb.append("\n");
 		sb.append("Claims: " + getResourceGenerators().size());
 		sb.append("\n");
 		sb.append(getGroupsString());

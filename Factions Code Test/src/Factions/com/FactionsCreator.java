@@ -9,7 +9,7 @@ public class FactionsCreator {
 	private Faction factionBlue = null;
 	private Faction factionYellow = null;
 
-	private int unitsPerFaction = 10;
+	private int unitsPerFaction = 15;
 
 	private ArrayList<Faction> currentFactions = new ArrayList<Faction>();
 	private ArrayList<ResourceGenerator> resourceGenerators = new ArrayList<>();
@@ -30,8 +30,8 @@ public class FactionsCreator {
 
 		// Give them X days worth of supplies
 		int daysOfSupplies = 20;
-		int currentWater = unitsPerFaction * daysOfSupplies;
-		int currentFood = unitsPerFaction * daysOfSupplies;
+		int currentWater = unitsPerFaction * (daysOfSupplies / 2);
+		int currentFood = unitsPerFaction * (daysOfSupplies / 3);
 
 		// Name, Water, Food, Weapons, Scrap, Units, Supplies
 		factionGreen = new Faction("Green", currentWater, currentFood, 0, 0, unitsPerFaction, createFactionGreenSupplies());
@@ -65,9 +65,7 @@ public class FactionsCreator {
 
 			if (!greenHasUnits && !blueHasUnits && !yellowHasUnits) {
 				break;
-			} else if (Integer.valueOf(greenHasUnits ? 1 : 0) + 
-					Integer.valueOf(blueHasUnits ? 1 : 0) + 
-					Integer.valueOf(yellowHasUnits ? 1 : 0) == 1) {
+			} else if (Integer.valueOf(greenHasUnits ? 1 : 0) + Integer.valueOf(blueHasUnits ? 1 : 0) + Integer.valueOf(yellowHasUnits ? 1 : 0) == 1) {
 				break;
 			}
 
@@ -113,37 +111,30 @@ public class FactionsCreator {
 	// Green
 	private ArrayList<ResourceGenerator> createFactionGreenSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.FOOD));
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.FOOD));
-
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WATER));
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SHELTER));
-
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SCRAP));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.WATER));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.FOOD));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.FOOD));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.SHELTER));
 		return supplies;
 	}
 
 	// Blue
 	private ArrayList<ResourceGenerator> createFactionBlueSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WATER));
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WATER));
-
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.FOOD));
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SHELTER));
-
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WEAPONS));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.WATER));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.WATER));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.FOOD));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.SHELTER));
 		return supplies;
 	}
 
 	// Yellow
 	private ArrayList<ResourceGenerator> createFactionYellowSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SHELTER));
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SHELTER));
-
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WATER));
-		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.FOOD));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.WATER));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.FOOD));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.SHELTER));
+		resourceGenerators.add(new ResourceGenerator((int) (Math.random() * unitsPerFaction), ResourceType.SHELTER));
 		return supplies;
 	}
 

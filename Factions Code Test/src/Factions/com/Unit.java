@@ -25,6 +25,7 @@ public class Unit {
 
 	public void takeDamage(int amount) {
 		health -= amount;
+		Math.max(0, health);
 	}
 
 	public int getHealth() {
@@ -51,7 +52,7 @@ public class Unit {
 		this.food = food;
 	}
 
-	public boolean isHasCraftedWeapon() {
+	public boolean hasCraftedWeapon() {
 		return hasCraftedWeapon;
 	}
 

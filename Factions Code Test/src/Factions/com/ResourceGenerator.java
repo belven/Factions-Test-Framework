@@ -22,12 +22,12 @@ public class ResourceGenerator {
 		return owner;
 	}
 
-	public void setOwner(Faction owner) {
+	public void setOwner(Faction newOwner) {
 		if (this.owner != null) {
 			this.owner.getResourceGenerators().remove(this);
 		}
 
-		this.owner = owner;
+		this.owner = newOwner;
 
 		if (!this.owner.getResourceGenerators().contains(this))
 			this.owner.getResourceGenerators().add(this);
