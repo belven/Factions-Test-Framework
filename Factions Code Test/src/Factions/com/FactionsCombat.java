@@ -1,6 +1,7 @@
 package Factions.com;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class FactionsCombat {
 	static public FactionsCombat INSTANCE = new FactionsCombat();
@@ -110,6 +111,7 @@ public class FactionsCombat {
 				unownedGenerators.add(rg);
 		}
 
+		Collections.shuffle(unownedGenerators);
 		return unownedGenerators;
 
 	}
