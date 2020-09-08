@@ -9,7 +9,7 @@ public class FactionsCreator {
 	private Faction factionBlue = null;
 	private Faction factionYellow = null;
 
-	private int unitsPerFaction = 15;
+	private int unitsPerFaction = 10;
 
 	private ArrayList<Faction> currentFactions = new ArrayList<Faction>();
 	private ArrayList<ResourceGenerator> resourceGenerators = new ArrayList<>();
@@ -29,7 +29,7 @@ public class FactionsCreator {
 		}
 
 		// Give them X days worth of supplies
-		int daysOfSupplies = 4;
+		int daysOfSupplies = 20;
 		int currentWater = unitsPerFaction * daysOfSupplies;
 		int currentFood = unitsPerFaction * daysOfSupplies;
 
@@ -51,7 +51,7 @@ public class FactionsCreator {
 	public void startCycles() {
 		factionOutput();
 
-		int days = 500;
+		int days = 600;
 
 		long begin = System.currentTimeMillis();
 
@@ -59,32 +59,66 @@ public class FactionsCreator {
 		// occur faster and more in real time. This could allow for other stats for
 		// factions, like a politics stat that changes how quickly decisions are made
 		for (int i = 1; i < days + 1; i++) {
+			boolean greenHasUnits = factionGreen.getUnits().size() > 0;
+			boolean blueHasUnits = factionBlue.getUnits().size() > 0;
+			boolean yellowHasUnits = factionYellow.getUnits().size() > 0;
+
+			if (!greenHasUnits && !blueHasUnits && !yellowHasUnits) {
+				break;
+			} else if (Integer.valueOf(greenHasUnits ? 1 : 0) + 
+					Integer.valueOf(blueHasUnits ? 1 : 0) + 
+					Integer.valueOf(yellowHasUnits ? 1 : 0) == 1) {
+				break;
+			}
+
 			System.out.println("------------------- Day " + i + " ------------------");
 
-			factionGreen.nextDay();
-			factionBlue.nextDay();
-			factionYellow.nextDay();
+			if (greenHasUnits)
+				factionGreen.nextDay();
 
-			FactionsCombat.getINSTANCE().performOffensiveActions(factionGreen);
-			FactionsCombat.getINSTANCE().performOffensiveActions(factionBlue);
-			FactionsCombat.getINSTANCE().performOffensiveActions(factionYellow);
+			if (blueHasUnits)
+				factionBlue.nextDay();
+
+			if (yellowHasUnits)
+				factionYellow.nextDay();
+
+			if (greenHasUnits)
+				FactionsCombat.getINSTANCE().performOffensiveActions(factionGreen);
+
+			if (blueHasUnits)
+				FactionsCombat.getINSTANCE().performOffensiveActions(factionBlue);
+
+			if (yellowHasUnits)
+				FactionsCombat.getINSTANCE().performOffensiveActions(factionYellow);
 
 			factionOutput();
+
 		}
 
 		System.out.println(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - begin));
+
 	}
 
 	private void factionOutput() {
-		System.out.println(factionGreen.toString());
-		System.out.println(factionBlue.toString());
-		System.out.println(factionYellow.toString());
+		if (factionGreen.getUnits().size() > 0)
+			System.out.println(factionGreen.toString());
+
+		if (factionBlue.getUnits().size() > 0)
+			System.out.println(factionBlue.toString());
+
+		if (factionYellow.getUnits().size() > 0)
+			System.out.println(factionYellow.toString());
 	}
 
 	// Green
 	private ArrayList<ResourceGenerator> createFactionGreenSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
 		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.FOOD));
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.FOOD));
+
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WATER));
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SHELTER));
+
 		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SCRAP));
 		return supplies;
 	}
@@ -93,6 +127,11 @@ public class FactionsCreator {
 	private ArrayList<ResourceGenerator> createFactionBlueSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
 		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WATER));
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WATER));
+
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.FOOD));
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SHELTER));
+
 		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WEAPONS));
 		return supplies;
 	}
@@ -101,6 +140,10 @@ public class FactionsCreator {
 	private ArrayList<ResourceGenerator> createFactionYellowSupplies() {
 		ArrayList<ResourceGenerator> supplies = new ArrayList<>();
 		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SHELTER));
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.SHELTER));
+
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.WATER));
+		supplies.add(new ResourceGenerator(unitsPerFaction, ResourceType.FOOD));
 		return supplies;
 	}
 

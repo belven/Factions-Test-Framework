@@ -43,8 +43,8 @@ public class Group {
 		sb.append("Units " + units.size() + ", ");
 		sb.append("Task " + taskText);
 		sb.append("\n");
-		// sb.append(units.toString());
-		// sb.append("\n");
+		 //sb.append(units.toString());
+		 //sb.append("\n");
 
 		return sb.toString();
 	}

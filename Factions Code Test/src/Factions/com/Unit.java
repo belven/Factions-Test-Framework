@@ -2,8 +2,8 @@ package Factions.com;
 
 public class Unit {
 	private String name;
-	private int health = 5;
-	private int water = 1;
+	private int health = 10;
+	private int water = 2;
 	private int food = 3;
 	private boolean hasCraftedWeapon = false;
 
@@ -21,6 +21,10 @@ public class Unit {
 		sb.append("\n");
 
 		return sb.toString();
+	}
+
+	public void takeDamage(int amount) {
+		health -= amount;
 	}
 
 	public int getHealth() {

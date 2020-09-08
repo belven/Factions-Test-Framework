@@ -2,6 +2,8 @@ package Factions.com;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Faction {
 
@@ -19,6 +21,27 @@ public class Faction {
 	private ArrayList<ResourceGenerator> ownedResourceGenerators = new ArrayList<>();
 
 	private HashMap<ResourceType, Need> currentNeeds = new HashMap<ResourceType, Need>();
+	
+	final String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+	final java.util.Random rand = new java.util.Random();
+
+	// consider using a Map<String,Boolean> to say whether the identifier is being used or not 
+	final Set<String> identifiers = new HashSet<String>();
+
+	public String randomIdentifier() {
+	    StringBuilder builder = new StringBuilder();
+	    while(builder.toString().length() == 0) {
+	        int length = rand.nextInt(5)+5;
+	        for(int i = 0; i < length; i++) {
+	            builder.append(lexicon.charAt(rand.nextInt(lexicon.length())));
+	        }
+	        if(identifiers.contains(builder.toString())) {
+	            builder = new StringBuilder();
+	        }
+	    }
+	    return builder.toString();
+	}
 
 	public Faction(String name, int currentWater, int currentFood, int currentWeapons, int currentScrap, int amountOfUnits, ArrayList<ResourceGenerator> supplies) {
 		super();
@@ -35,7 +58,7 @@ public class Faction {
 
 		for (int i = 0; i < amountOfUnits; i++) {
 			String id = String.valueOf(i + 1);
-			currentUnits.add(new Unit(id));
+			currentUnits.add(new Unit(randomIdentifier()));
 		}
 
 		calculateResourcesAndNeeds();
@@ -48,15 +71,27 @@ public class Faction {
 		// Use resources
 		calculateTierTwoResources();
 		calculateUnitNeeds();
+		increaseUnits();
 
 		// Work out our current needs
 		calculateNeeds();
 	}
 
+	private void increaseUnits() {
+		for (int i = 0; i < (getCurrentUnits() / 4); i++) {
+			String id = String.valueOf(i + 1);
+			currentUnits.add(new Unit(randomIdentifier()));
+		}
+
+	}
+
 	public void nextDay() {
 		calculateResourcesAndNeeds();
-		calculateTasks();
-		assignGroups();
+
+		if (currentUnits.size() > 0) {
+			calculateTasks();
+			assignGroups();
+		}
 	}
 
 	private void assignGroups() {
@@ -186,14 +221,50 @@ public class Faction {
 	}
 
 	private void calculateUnitNeeds() {
-		// TODO make this calculate using only units that have lost water
-		currentWater -= getCurrentUnits();
+		for (Unit u : currentUnits) {
+			if (u.getWater() > 0) {
+				// Loose Water
+				u.setWater(u.getWater() - 1);
+			}
 
-		// TODO make this calculate using only units that have lost food
-		currentFood -= getCurrentUnits();
+			if (u.getWater() == 0 && currentWater > 0) {
+				u.setWater(2);
+				currentWater--;
+			} else {
+				u.takeDamage(1);
+			}
 
-		currentFood = Math.max(0, currentFood);
-		currentWater = Math.max(0, currentWater);
+			if (u.getFood() > 0) {
+				// Loose Food
+				u.setFood(u.getFood() - 1);
+			}
+
+			if (u.getFood() == 0 && currentFood > 0) {
+				// One food supply adds 3 days worth of food
+				u.setFood(3);
+				currentFood--;
+			} else {
+				u.takeDamage(1);
+			}
+		}
+
+		removeDead();
+	}
+
+	private void removeDead() {
+		ArrayList<Unit> deadUnits = new ArrayList<Unit>();
+
+		for (Unit ourUnit : currentUnits) {
+			if (ourUnit.getHealth() <= 0) {
+				deadUnits.add(ourUnit);
+				System.out.println(ourUnit.getName() + " in faction " + name + " died of natural causes");
+			}
+		}
+		if (deadUnits.size() > 0) {
+			System.out.println("\n");
+
+			currentUnits.removeAll(deadUnits);
+		}
 	}
 
 	private void calculateTierTwoResources() {
@@ -328,11 +399,11 @@ public class Faction {
 		sb.append(", ");
 		sb.append("Weapons: " + currentWeapons);
 		sb.append("\n");
-//		sb.append("Needs: " + getNeedsString());
-//		sb.append("\n");
+		sb.append("Needs: " + getNeedsString());
+		sb.append("\n");
 		sb.append("Claims: " + getResourceGenerators().size());
 		sb.append("\n");
-		// sb.append(getGroupsString());
+		sb.append(getGroupsString());
 
 		return sb.toString();
 	}
@@ -388,6 +459,10 @@ public class Faction {
 
 	public int getCurrentUnits() {
 		return currentUnits.size();
+	}
+
+	public ArrayList<Unit> getUnits() {
+		return currentUnits;
 	}
 
 	public int getWater() {
